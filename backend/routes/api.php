@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Store\CategoryController as StoreCategoryController;
+use App\Http\Controllers\Store\ProductController as StoreProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/v1/health', function () {
@@ -34,5 +38,42 @@ Route::group(['prefix' => 'v1/auth'], function (): void {
                 return response()->json(['data' => ['admin' => true]]);
             });
         });
+    });
+});
+
+// Public store routes
+Route::group(['prefix' => 'v1'], function (): void {
+    Route::get('/categories', [StoreCategoryController::class, 'index']);
+    Route::get('/categories/{slug}', [StoreCategoryController::class, 'show']);
+
+    Route::get('/products', [StoreProductController::class, 'index']);
+    Route::get('/products/featured', [StoreProductController::class, 'featured']);
+    Route::get('/products/{slug}', [StoreProductController::class, 'show']);
+});
+
+// Admin routes
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
+    Route::group(['prefix' => 'v1/admin'], function (): void {
+        // Categories
+        Route::get('/categories', [AdminCategoryController::class, 'index']);
+        Route::post('/categories', [AdminCategoryController::class, 'store']);
+        Route::get('/categories/{category}', [AdminCategoryController::class, 'show']);
+        Route::put('/categories/{category}', [AdminCategoryController::class, 'update']);
+        Route::patch('/categories/{category}', [AdminCategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy']);
+
+        // Products
+        Route::get('/products', [AdminProductController::class, 'index']);
+        Route::post('/products', [AdminProductController::class, 'store']);
+        Route::get('/products/{product}', [AdminProductController::class, 'show']);
+        Route::put('/products/{product}', [AdminProductController::class, 'update']);
+        Route::patch('/products/{product}', [AdminProductController::class, 'update']);
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy']);
+        Route::post('/products/{product}/restore', [AdminProductController::class, 'restore']);
+
+        // Product images
+        Route::post('/products/{product}/images', [AdminProductController::class, 'uploadImages']);
+        Route::delete('/products/{product}/images/{image}', [AdminProductController::class, 'destroyImage']);
+        Route::patch('/products/{product}/images/reorder', [AdminProductController::class, 'reorderImages']);
     });
 });

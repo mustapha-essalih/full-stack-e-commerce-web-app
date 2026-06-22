@@ -1,6 +1,9 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminRoute from '../components/AdminRoute';
 import ProtectedRoute from '../components/ProtectedRoute';
+import CatalogPage from '../pages/CatalogPage';
+import CategoryPage from '../pages/CategoryPage';
+import ProductDetailPage from '../pages/ProductDetailPage';
 import EmailVerificationPage from '../pages/EmailVerificationPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import LoginPage from '../pages/LoginPage';
@@ -31,6 +34,18 @@ const router = createBrowserRouter([
   {
     path: '/email/verify',
     element: <EmailVerificationPage />,
+  },
+  {
+    path: '/catalog',
+    element: <CatalogPage />,
+  },
+  {
+    path: '/category/:slug',
+    element: <CategoryPage />,
+  },
+  {
+    path: '/product/:slug',
+    element: <ProductDetailPage />,
   },
   {
     path: '/account',
