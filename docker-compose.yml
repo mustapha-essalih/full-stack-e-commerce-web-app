@@ -1,0 +1,121 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: pharos-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/app.ini
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=pgsql
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-pharos}
+      - DB_USERNAME=${DB_USERNAME:-pharos}
+      - DB_PASSWORD=${DB_PASSWORD:-pharos}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: pharos-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+      - vite
+
+  pgsql:
+    image: postgres:16-alpine
+    container_name: pharos-pgsql
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-pharos}
+      POSTGRES_USER: ${DB_USERNAME:-pharos}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pharos}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgsql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-pharos} -d ${DB_DATABASE:-pharos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pharos-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  horizon:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: pharos-horizon
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=pgsql
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-pharos}
+      - DB_USERNAME=${DB_USERNAME:-pharos}
+      - DB_PASSWORD=${DB_PASSWORD:-pharos}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: php artisan horizon
+    depends_on:
+      pgsql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  vite:
+    image: node:22-alpine
+    container_name: pharos-vite
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      - CHOKIDAR_USEPOLLING=1
+      - VITE_HOST=0.0.0.0
+
+volumes:
+  pgsql_data:
+  redis_data:

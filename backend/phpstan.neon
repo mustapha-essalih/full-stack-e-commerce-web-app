@@ -1,0 +1,14 @@
+parameters:
+    level: 8
+    paths:
+        - app/
+        - config/
+        - database/
+        - routes/
+    tmpDir: storage/framework/cache/phpstan
+    excludePaths:
+        - vendor/
+        - storage/
+        - bootstrap/
+    bootstrapFiles:
+        - vendor/autoload.php
