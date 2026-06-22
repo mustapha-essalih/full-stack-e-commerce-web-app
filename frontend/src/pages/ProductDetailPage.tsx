@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
+import AddToCartButton from '../components/AddToCartButton';
 import ProductGallery from '../components/ProductGallery';
 import ProductCard from '../components/ProductCard';
 
@@ -23,7 +24,7 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-secondary-50">
+      <div className="min-h-full bg-secondary-50">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-8">
             <div className="h-4 w-48 rounded bg-secondary-200" />
@@ -45,7 +46,7 @@ export default function ProductDetailPage() {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-secondary-50">
+      <div className="min-h-full bg-secondary-50">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="rounded-lg bg-danger-50 p-6 text-center">
             <p className="text-danger-600">
@@ -65,7 +66,7 @@ export default function ProductDetailPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-secondary-50">
+    <div className="min-h-full bg-secondary-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-6 text-sm text-secondary-500">
           <Link to="/" className="hover:text-primary-600">Home</Link>
@@ -165,12 +166,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            <button
-              disabled={product.stock_quantity === 0}
-              className="w-full rounded-lg bg-primary-600 px-8 py-3 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-            >
-              {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </button>
+            <AddToCartButton product={product} showQuantity className="flex-wrap" />
           </div>
         </div>
 

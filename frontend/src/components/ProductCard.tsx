@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Product } from '../api/products';
+import AddToCartButton from './AddToCartButton';
 
 interface ProductCardProps {
   product: Product;
@@ -27,11 +28,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images?.find((img) => img.is_primary) || product.images?.[0];
 
   return (
-    <Link
-      to={`/product/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-lg border border-secondary-200 bg-white transition-shadow hover:shadow-lg"
-    >
-      <div className="relative aspect-square overflow-hidden bg-secondary-100">
+    <div className="group flex flex-col overflow-hidden rounded-lg border border-secondary-200 bg-white transition-shadow hover:shadow-lg">
+      <Link
+        to={`/product/${product.slug}`}
+        className="relative aspect-square overflow-hidden bg-secondary-100"
+      >
         {primaryImage ? (
           <img
             src={primaryImage.thumbnail_url}
@@ -61,20 +62,22 @@ export default function ProductCard({ product }: ProductCardProps) {
             Sale
           </span>
         )}
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex flex-wrap gap-1">
-          {product.categories?.slice(0, 2).map((cat) => (
-            <span key={cat.uuid} className="rounded-full bg-secondary-100 px-2 py-0.5 text-xs text-secondary-600">
-              {cat.name}
-            </span>
-          ))}
-        </div>
+        <Link to={`/product/${product.slug}`}>
+          <div className="flex flex-wrap gap-1">
+            {product.categories?.slice(0, 2).map((cat) => (
+              <span key={cat.uuid} className="rounded-full bg-secondary-100 px-2 py-0.5 text-xs text-secondary-600">
+                {cat.name}
+              </span>
+            ))}
+          </div>
 
-        <h3 className="text-sm font-medium text-secondary-900 line-clamp-2 group-hover:text-primary-600">
-          {product.name}
-        </h3>
+          <h3 className="mt-1 text-sm font-medium text-secondary-900 line-clamp-2 group-hover:text-primary-600">
+            {product.name}
+          </h3>
+        </Link>
 
         <div className="flex items-center gap-1">
           <RatingStars rating={4} />
@@ -87,7 +90,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-sm text-secondary-400 line-through">{product.compare_price_formatted}</span>
           )}
         </div>
+
+        <AddToCartButton product={product} className="mt-2" />
       </div>
-    </Link>
+    </div>
   );
 }

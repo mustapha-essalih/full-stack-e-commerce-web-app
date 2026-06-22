@@ -34,6 +34,12 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  const cartSessionId = localStorage.getItem('cart_session_id');
+  if (cartSessionId) {
+    config.headers['X-Cart-Session'] = cartSessionId;
+  }
+
   return config;
 });
 

@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+      <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
         <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-md">
           <h1 className="mb-4 text-2xl font-bold text-secondary-900">Check Your Email</h1>
           <p className="mb-4 text-secondary-600">
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+    <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 className="mb-6 text-2xl font-bold text-secondary-900">Reset Password</h1>
 

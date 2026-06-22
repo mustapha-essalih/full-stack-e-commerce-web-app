@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import client from '../api/client';
 import { useAuthStore } from '../stores/useAuthStore';
+import { useCartStore } from '../stores/useCartStore';
 import { useState } from 'react';
 
 const loginSchema = z.object({
@@ -16,6 +17,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const syncWithServer = useCartStore((s) => s.syncWithServer);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -32,6 +34,7 @@ export default function LoginPage() {
       const response = await client.post('/v1/auth/login', data);
       const { user, access_token, refresh_token } = response.data.data;
       login(access_token, refresh_token, user);
+      await syncWithServer();
       navigate(user.roles.includes('admin') ? '/admin' : '/account');
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
@@ -44,7 +47,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+    <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 className="mb-6 text-2xl font-bold text-secondary-900">Sign In</h1>
 

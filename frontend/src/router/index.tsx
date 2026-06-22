@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminRoute from '../components/AdminRoute';
+import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import CatalogPage from '../pages/CatalogPage';
 import CategoryPage from '../pages/CategoryPage';
@@ -13,63 +14,69 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <div className="flex min-h-screen items-center justify-center text-2xl font-bold text-secondary-900">Pharos Commerce</div>,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/register',
-    element: <RegisterPage />,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: '/reset-password',
-    element: <ResetPasswordPage />,
-  },
-  {
-    path: '/email/verify',
-    element: <EmailVerificationPage />,
-  },
-  {
-    path: '/catalog',
-    element: <CatalogPage />,
-  },
-  {
-    path: '/category/:slug',
-    element: <CategoryPage />,
-  },
-  {
-    path: '/product/:slug',
-    element: <ProductDetailPage />,
-  },
-  {
-    path: '/account',
-    element: <ProtectedRoute />,
+    element: <Layout />,
     children: [
       {
         index: true,
-        element: <div className="flex min-h-screen items-center justify-center text-xl">My Account</div>,
+        element: <div className="flex min-h-[60vh] items-center justify-center text-2xl font-bold text-secondary-900">Pharos Commerce</div>,
       },
-    ],
-  },
-  {
-    path: '/admin',
-    element: <AdminRoute />,
-    children: [
       {
-        index: true,
-        element: <div className="flex min-h-screen items-center justify-center text-xl">Admin Dashboard</div>,
+        path: 'login',
+        element: <LoginPage />,
+      },
+      {
+        path: 'register',
+        element: <RegisterPage />,
+      },
+      {
+        path: 'forgot-password',
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: 'reset-password',
+        element: <ResetPasswordPage />,
+      },
+      {
+        path: 'email/verify',
+        element: <EmailVerificationPage />,
+      },
+      {
+        path: 'catalog',
+        element: <CatalogPage />,
+      },
+      {
+        path: 'category/:slug',
+        element: <CategoryPage />,
+      },
+      {
+        path: 'product/:slug',
+        element: <ProductDetailPage />,
+      },
+      {
+        path: 'account',
+        element: <ProtectedRoute />,
+        children: [
+          {
+            index: true,
+            element: <div className="flex min-h-[60vh] items-center justify-center text-xl">My Account</div>,
+          },
+        ],
+      },
+      {
+        path: 'admin',
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <div className="flex min-h-[60vh] items-center justify-center text-xl">Admin Dashboard</div>,
+          },
+        ],
+      },
+      {
+        path: '*',
+        element: <Navigate to="/" replace />,
       },
     ],
-  },
-  {
-    path: '*',
-    element: <Navigate to="/" replace />,
   },
 ]);
 

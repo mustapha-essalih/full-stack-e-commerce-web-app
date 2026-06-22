@@ -24,7 +24,7 @@ export default function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+    <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-md">
         <h1 className="mb-4 text-2xl font-bold text-secondary-900">Verify Your Email</h1>
 

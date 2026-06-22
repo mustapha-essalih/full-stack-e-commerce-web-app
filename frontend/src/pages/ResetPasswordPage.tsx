@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
 
   if (!token || !email) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+      <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
         <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-md">
           <h1 className="mb-4 text-2xl font-bold text-secondary-900">Invalid Link</h1>
           <p className="mb-4 text-secondary-600">This password reset link is invalid or has expired.</p>
@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+      <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
         <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-md">
           <h1 className="mb-4 text-2xl font-bold text-secondary-900">Password Reset</h1>
           <p className="mb-4 text-secondary-600">Your password has been reset successfully.</p>
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary-50 px-4">
+    <div className="flex min-h-full items-center justify-center bg-secondary-50 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 className="mb-6 text-2xl font-bold text-secondary-900">Set New Password</h1>
 

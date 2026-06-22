@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\Store\CategoryController as StoreCategoryController;
 use App\Http\Controllers\Store\ProductController as StoreProductController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,15 @@ Route::group(['prefix' => 'v1'], function (): void {
     Route::get('/products', [StoreProductController::class, 'index']);
     Route::get('/products/featured', [StoreProductController::class, 'featured']);
     Route::get('/products/{slug}', [StoreProductController::class, 'show']);
+});
+
+// Cart routes (mixed auth — guest and authenticated)
+Route::group(['prefix' => 'v1/cart'], function (): void {
+    Route::get('/', [CartController::class, 'show']);
+    Route::post('/items', [CartController::class, 'addItem']);
+    Route::patch('/items/{cartItem}', [CartController::class, 'updateItemQuantity']);
+    Route::delete('/items/{cartItem}', [CartController::class, 'removeItem']);
+    Route::delete('/', [CartController::class, 'clear']);
 });
 
 // Admin routes

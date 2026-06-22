@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserLoggedIn;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -58,6 +59,11 @@ class AuthController extends Controller
 
         $accessToken = $user->createToken('access', ['*'], now()->addMinutes(15));
         $refreshToken = $user->createToken('refresh', ['*'], now()->addDays(7));
+
+        event(new UserLoggedIn(
+            user: $user,
+            sessionId: $request->header('X-Cart-Session'),
+        ));
 
         return response()->json([
             'data' => [
