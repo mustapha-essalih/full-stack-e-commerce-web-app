@@ -12,3 +12,6 @@ parameters:
         - bootstrap/
     bootstrapFiles:
         - vendor/autoload.php
+    ignoreErrors:
+        - '#Access to an undefined property Laravel\\Sanctum\\PersonalAccessToken::\$#'
+
