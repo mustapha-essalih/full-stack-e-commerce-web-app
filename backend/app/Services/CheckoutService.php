@@ -61,7 +61,7 @@ class CheckoutService
             $order = Order::create([
                 'uuid' => (string) Str::uuid(),
                 'user_id' => $user?->id,
-                'status' => OrderStatus::Draft->value,
+                'status' => OrderStatus::Pending->value,
                 'subtotal_cents' => $subtotalCents,
                 'discount_cents' => 0,
                 'billing_address_id' => $address->id,
@@ -137,8 +137,8 @@ class CheckoutService
      */
     public function createPaymentIntent(Order $order): array
     {
-        if (!$order->isDraft()) {
-            throw new \RuntimeException('Order is not in draft status.');
+        if (!$order->isPending()) {
+            throw new \RuntimeException('Order is not in pending status.');
         }
 
         $totals = $this->calculateTotals($order);
@@ -225,6 +225,10 @@ class CheckoutService
 
     public function findOrderByUuid(string $uuid): ?Order
     {
+        if (!\Illuminate\Support\Str::isUuid($uuid)) {
+            return null;
+        }
+
         /** @var Order|null $order */
         $order = Order::with(['billingAddress', 'payment'])->where('uuid', $uuid)->first();
 

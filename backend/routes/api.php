@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Store\CategoryController as StoreCategoryController;
 use App\Http\Controllers\Store\ProductController as StoreProductController;
 use App\Http\Controllers\StripeWebhookController;
@@ -63,6 +65,15 @@ Route::group(['prefix' => 'v1/cart'], function (): void {
     Route::delete('/', [CartController::class, 'clear']);
 });
 
+// Customer order routes
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::group(['prefix' => 'v1/orders'], function (): void {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::get('/{uuid}', [OrderController::class, 'show']);
+        Route::post('/{uuid}/cancel', [OrderController::class, 'cancel']);
+    });
+});
+
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
     Route::group(['prefix' => 'v1/admin'], function (): void {
@@ -87,6 +98,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::post('/products/{product}/images', [AdminProductController::class, 'uploadImages']);
         Route::delete('/products/{product}/images/{image}', [AdminProductController::class, 'destroyImage']);
         Route::patch('/products/{product}/images/reorder', [AdminProductController::class, 'reorderImages']);
+
+        // Orders
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{uuid}', [AdminOrderController::class, 'show']);
+        Route::patch('/orders/{uuid}/status', [AdminOrderController::class, 'updateStatus']);
     });
 });
 

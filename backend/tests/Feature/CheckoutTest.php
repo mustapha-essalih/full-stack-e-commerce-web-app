@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -74,7 +73,7 @@ class CheckoutTest extends TestCase
                     'totals',
                 ],
             ])
-            ->assertJsonPath('data.order.status', 'draft')
+            ->assertJsonPath('data.order.status', 'pending')
             ->assertJsonPath('data.order.subtotal_cents', 3998);
     }
 
@@ -123,7 +122,7 @@ class CheckoutTest extends TestCase
             ]);
 
         $response->assertOk()
-            ->assertJsonPath('data.order.status', 'draft')
+            ->assertJsonPath('data.order.status', 'pending')
             ->assertJsonPath('data.order.user_id', $user->id);
     }
 
@@ -218,13 +217,13 @@ class CheckoutTest extends TestCase
 
     public function test_show_order_by_uuid(): void
     {
-        $order = Order::factory()->draft()->create();
+        $order = Order::factory()->pending()->create();
 
         $response = $this->getJson("/api/v1/checkout/{$order->uuid}");
 
         $response->assertOk()
             ->assertJsonPath('data.order.uuid', $order->uuid)
-            ->assertJsonPath('data.order.status', 'draft');
+            ->assertJsonPath('data.order.status', 'pending');
     }
 
     public function test_show_order_returns_404_for_invalid_uuid(): void
@@ -265,7 +264,7 @@ class CheckoutTest extends TestCase
 
     public function test_webhook_handles_successful_payment(): void
     {
-        $order = Order::factory()->draft()->create([
+        $order = Order::factory()->pending()->create([
             'subtotal_cents' => 1999,
             'total_cents' => 2798,
         ]);
@@ -298,13 +297,13 @@ class CheckoutTest extends TestCase
         $response->assertStatus(400);
     }
 
-    public function test_expired_draft_orders_are_cancelled(): void
+    public function test_expired_pending_orders_are_cancelled(): void
     {
-        $expiredOrder = Order::factory()->draft()->create([
+        $expiredOrder = Order::factory()->pending()->create([
             'created_at' => now()->subHours(25),
         ]);
 
-        $recentOrder = Order::factory()->draft()->create([
+        $recentOrder = Order::factory()->pending()->create([
             'created_at' => now()->subHour(),
         ]);
 
@@ -313,12 +312,12 @@ class CheckoutTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $expiredOrder->id,
-            'status' => OrderStatus::Cancelled->value,
+            'status' => 'cancelled',
         ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $recentOrder->id,
-            'status' => OrderStatus::Draft->value,
+            'status' => 'pending',
         ]);
     }
 }

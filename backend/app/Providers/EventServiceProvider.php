@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Events\OrderPaid;
 use App\Events\OrderPaymentFailed;
+use App\Events\OrderStatusChanged;
 use App\Events\UserLoggedIn;
 use App\Listeners\MergeGuestCart;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -21,6 +22,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderPaid::class => [],
         OrderPaymentFailed::class => [],
+        OrderStatusChanged::class => [],
     ];
 
     public function shouldDiscoverEvents(): bool

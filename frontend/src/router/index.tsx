@@ -6,7 +6,11 @@ import CatalogPage from '../pages/CatalogPage';
 import CategoryPage from '../pages/CategoryPage';
 import CheckoutPage from '../features/checkout/CheckoutPage';
 import OrderConfirmationPage from '../pages/OrderConfirmationPage';
+import OrderDetailPage from '../pages/OrderDetailPage';
+import OrderHistoryPage from '../pages/OrderHistoryPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
+import AdminOrderDetailPage from '../pages/admin/OrderDetailPage';
+import AdminOrderListPage from '../pages/admin/OrderListPage';
 import EmailVerificationPage from '../pages/EmailVerificationPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import LoginPage from '../pages/LoginPage';
@@ -70,6 +74,14 @@ const router = createBrowserRouter([
             index: true,
             element: <div className="flex min-h-[60vh] items-center justify-center text-xl">My Account</div>,
           },
+          {
+            path: 'orders',
+            element: <OrderHistoryPage />,
+          },
+          {
+            path: 'orders/:uuid',
+            element: <OrderDetailPage />,
+          },
         ],
       },
       {
@@ -79,6 +91,14 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <div className="flex min-h-[60vh] items-center justify-center text-xl">Admin Dashboard</div>,
+          },
+          {
+            path: 'orders',
+            element: <AdminOrderListPage />,
+          },
+          {
+            path: 'orders/:uuid',
+            element: <AdminOrderDetailPage />,
           },
         ],
       },

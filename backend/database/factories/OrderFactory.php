@@ -19,7 +19,7 @@ class OrderFactory extends Factory
         return [
             'uuid' => fake()->uuid(),
             'user_id' => null,
-            'status' => OrderStatus::Draft->value,
+            'status' => OrderStatus::Pending->value,
             'subtotal_cents' => 0,
             'tax_cents' => 0,
             'shipping_cents' => 0,
@@ -35,10 +35,10 @@ class OrderFactory extends Factory
         ];
     }
 
-    public function draft(): static
+    public function pending(): static
     {
         return $this->state(fn (): array => [
-            'status' => OrderStatus::Draft->value,
+            'status' => OrderStatus::Pending->value,
         ]);
     }
 
@@ -47,6 +47,46 @@ class OrderFactory extends Factory
         return $this->state(fn (): array => [
             'status' => OrderStatus::Paid->value,
             'paid_at' => now(),
+        ]);
+    }
+
+    public function processing(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::Processing->value,
+            'paid_at' => now(),
+            'processing_at' => now(),
+        ]);
+    }
+
+    public function shipped(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::Shipped->value,
+            'paid_at' => now(),
+            'processing_at' => now(),
+            'shipped_at' => now(),
+            'tracking_number' => '1Z' . fake()->regexify('[0-9]{16}'),
+        ]);
+    }
+
+    public function delivered(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::Delivered->value,
+            'paid_at' => now(),
+            'processing_at' => now(),
+            'shipped_at' => now()->subDays(2),
+            'delivered_at' => now(),
+            'tracking_number' => '1Z' . fake()->regexify('[0-9]{16}'),
+        ]);
+    }
+
+    public function cancelled(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::Cancelled->value,
+            'cancelled_at' => now(),
         ]);
     }
 

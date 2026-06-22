@@ -76,9 +76,9 @@ class CheckoutController extends Controller
             ], 404);
         }
 
-        if (!$order->isDraft()) {
+        if (!$order->isPending()) {
             return response()->json([
-                'message' => 'Cannot modify a non-draft order.',
+                'message' => 'Cannot modify a non-pending order.',
             ], 422);
         }
 
@@ -110,9 +110,9 @@ class CheckoutController extends Controller
             ], 404);
         }
 
-        if (!$order->isDraft()) {
+        if (!$order->isPending()) {
             return response()->json([
-                'message' => 'Cannot modify a non-draft order.',
+                'message' => 'Cannot modify a non-pending order.',
             ], 422);
         }
 
@@ -136,9 +136,9 @@ class CheckoutController extends Controller
             ], 404);
         }
 
-        if (!$order->isDraft()) {
+        if (!$order->isPending()) {
             return response()->json([
-                'message' => 'Order is not in draft status.',
+                'message' => 'Order is not in pending status.',
             ], 422);
         }
 

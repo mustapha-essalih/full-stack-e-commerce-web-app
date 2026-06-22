@@ -23,7 +23,7 @@ class CancelExpiredDraftOrders extends Command
 
     public function handle(): int
     {
-        $count = Order::where('status', OrderStatus::Draft->value)
+        $count = Order::where('status', OrderStatus::Pending->value)
             ->where('created_at', '<', Carbon::now()->subHours(24))
             ->update([
                 'status' => OrderStatus::Cancelled->value,
