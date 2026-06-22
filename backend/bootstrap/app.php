@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
             Illuminate\Session\Middleware\StartSession::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'v1/webhooks/stripe',
+        ]);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

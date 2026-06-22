@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import CatalogPage from '../pages/CatalogPage';
 import CategoryPage from '../pages/CategoryPage';
+import CheckoutPage from '../features/checkout/CheckoutPage';
+import OrderConfirmationPage from '../pages/OrderConfirmationPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
 import EmailVerificationPage from '../pages/EmailVerificationPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
@@ -51,6 +53,14 @@ const router = createBrowserRouter([
       {
         path: 'product/:slug',
         element: <ProductDetailPage />,
+      },
+      {
+        path: 'checkout',
+        element: <CheckoutPage />,
+      },
+      {
+        path: 'orders/:uuid/confirmation',
+        element: <OrderConfirmationPage />,
       },
       {
         path: 'account',

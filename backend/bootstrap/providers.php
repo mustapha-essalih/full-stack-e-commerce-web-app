@@ -3,5 +3,7 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\EventServiceProvider::class,
-    App\Providers\HorizonServiceProvider::class,
+    ...(($_ENV['APP_ENV'] ?? '') === 'testing' ? [] : [
+        App\Providers\HorizonServiceProvider::class,
+    ]),
 ];

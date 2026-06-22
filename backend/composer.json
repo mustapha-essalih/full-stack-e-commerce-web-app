@@ -11,7 +11,9 @@
         "laravel/horizon": "^5.47",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10.1",
-        "spatie/laravel-permission": "^8.0"
+        "predis/predis": "*",
+        "spatie/laravel-permission": "^8.0",
+        "stripe/stripe-php": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

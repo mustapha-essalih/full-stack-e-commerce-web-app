@@ -8,8 +8,10 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Store\CategoryController as StoreCategoryController;
 use App\Http\Controllers\Store\ProductController as StoreProductController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/v1/health', function () {
@@ -87,3 +89,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::patch('/products/{product}/images/reorder', [AdminProductController::class, 'reorderImages']);
     });
 });
+
+// Checkout routes
+Route::group(['prefix' => 'v1/checkout'], function (): void {
+    Route::post('/initialize', [CheckoutController::class, 'initialize']);
+    Route::get('/{orderUuid}', [CheckoutController::class, 'show']);
+    Route::post('/{orderUuid}/coupon', [CheckoutController::class, 'applyCoupon']);
+    Route::delete('/{orderUuid}/coupon', [CheckoutController::class, 'removeCoupon']);
+    Route::post('/{orderUuid}/payment-intent', [CheckoutController::class, 'createPaymentIntent']);
+});
+
+// Stripe webhook (unauthenticated, signature-verified inside controller)
+Route::post('/v1/webhooks/stripe', [StripeWebhookController::class, 'handle']);
