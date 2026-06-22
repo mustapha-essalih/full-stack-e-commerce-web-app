@@ -66,6 +66,15 @@ class CategoryController extends Controller
         ]);
     }
 
+    public function tree(): JsonResponse
+    {
+        $categories = $this->categoryService->getTree();
+
+        return response()->json([
+            'data' => CategoryResource::collection($categories),
+        ]);
+    }
+
     public function destroy(Category $category): JsonResponse
     {
         $this->categoryService->archiveCategory($category);

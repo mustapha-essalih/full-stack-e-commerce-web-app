@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkProductActionRequest;
 use App\Http\Requests\ReorderImagesRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Requests\UploadImagesRequest;
+use App\Http\Resources\ProductCollectionResource;
 use App\Http\Resources\ProductImageResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
@@ -29,6 +31,15 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        if ($request->has('ids')) {
+            $ids = $request->validate(['ids' => ['required', 'array', 'min:1'], 'ids.*' => ['integer']])['ids'];
+            $products = $this->productRepository->findByIds($ids);
+
+            return response()->json([
+                'data' => ProductResource::collection($products),
+            ]);
+        }
+
         $filters = $request->only([
             'search',
             'category_id',
@@ -44,7 +55,7 @@ class ProductController extends Controller
         $filters['include_inactive'] = true;
         $products = $this->productRepository->searchAndFilter($filters);
 
-        return response()->json($products);
+        return response()->json(new ProductCollectionResource($products));
     }
 
     public function store(StoreProductRequest $request): JsonResponse
@@ -78,6 +89,22 @@ class ProductController extends Controller
 
         return response()->json([
             'data' => new ProductResource($product),
+        ]);
+    }
+
+    public function bulkAction(BulkProductActionRequest $request): JsonResponse
+    {
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        if ($action === 'activate') {
+            $this->productService->bulkActivate($ids);
+        } elseif ($action === 'archive') {
+            $this->productService->bulkArchive($ids);
+        }
+
+        return response()->json([
+            'message' => "Products {$action}d successfully.",
         ]);
     }
 

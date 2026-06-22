@@ -1,7 +1,9 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminRoute from '../components/AdminRoute';
+import AdminLayout from '../components/admin/AdminLayout';
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
+import AccountLayout from '../components/account/AccountLayout';
 import CatalogPage from '../pages/CatalogPage';
 import CategoryPage from '../pages/CategoryPage';
 import CheckoutPage from '../features/checkout/CheckoutPage';
@@ -11,6 +13,14 @@ import OrderHistoryPage from '../pages/OrderHistoryPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
 import AdminOrderDetailPage from '../pages/admin/OrderDetailPage';
 import AdminOrderListPage from '../pages/admin/OrderListPage';
+import AdminDashboardPage from '../pages/admin/DashboardPage';
+import AdminProductListPage from '../pages/admin/ProductListPage';
+import AdminProductFormPage from '../pages/admin/ProductFormPage';
+import AdminCategoryListPage from '../pages/admin/CategoryListPage';
+import AdminCategoryFormPage from '../pages/admin/CategoryFormPage';
+import AddressBookPage from '../pages/account/AddressBookPage';
+import ProfilePage from '../pages/account/ProfilePage';
+import WishlistPage from '../pages/account/WishlistPage';
 import EmailVerificationPage from '../pages/EmailVerificationPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import LoginPage from '../pages/LoginPage';
@@ -71,16 +81,29 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
-            index: true,
-            element: <div className="flex min-h-[60vh] items-center justify-center text-xl">My Account</div>,
-          },
-          {
-            path: 'orders',
-            element: <OrderHistoryPage />,
-          },
-          {
-            path: 'orders/:uuid',
-            element: <OrderDetailPage />,
+            element: <AccountLayout />,
+            children: [
+              {
+                index: true,
+                element: <ProfilePage />,
+              },
+              {
+                path: 'addresses',
+                element: <AddressBookPage />,
+              },
+              {
+                path: 'wishlist',
+                element: <WishlistPage />,
+              },
+              {
+                path: 'orders',
+                element: <OrderHistoryPage />,
+              },
+              {
+                path: 'orders/:uuid',
+                element: <OrderDetailPage />,
+              },
+            ],
           },
         ],
       },
@@ -89,16 +112,45 @@ const router = createBrowserRouter([
         element: <AdminRoute />,
         children: [
           {
-            index: true,
-            element: <div className="flex min-h-[60vh] items-center justify-center text-xl">Admin Dashboard</div>,
-          },
-          {
-            path: 'orders',
-            element: <AdminOrderListPage />,
-          },
-          {
-            path: 'orders/:uuid',
-            element: <AdminOrderDetailPage />,
+            element: <AdminLayout />,
+            children: [
+              {
+                index: true,
+                element: <AdminDashboardPage />,
+              },
+              {
+                path: 'products',
+                element: <AdminProductListPage />,
+              },
+              {
+                path: 'products/create',
+                element: <AdminProductFormPage />,
+              },
+              {
+                path: 'products/:id/edit',
+                element: <AdminProductFormPage />,
+              },
+              {
+                path: 'categories',
+                element: <AdminCategoryListPage />,
+              },
+              {
+                path: 'categories/create',
+                element: <AdminCategoryFormPage />,
+              },
+              {
+                path: 'categories/:id/edit',
+                element: <AdminCategoryFormPage />,
+              },
+              {
+                path: 'orders',
+                element: <AdminOrderListPage />,
+              },
+              {
+                path: 'orders/:uuid',
+                element: <AdminOrderDetailPage />,
+              },
+            ],
           },
         ],
       },

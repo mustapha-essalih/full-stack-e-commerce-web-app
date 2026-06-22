@@ -15,7 +15,7 @@ export default function Layout() {
   const navLinks = [
     { to: '/catalog', label: 'Catalog' },
     ...(isAdmin ? [{ to: '/admin/orders', label: 'Orders' }] : []),
-    ...(isAuthenticated ? [{ to: '/account/orders', label: 'My Orders' }] : []),
+    ...(isAuthenticated ? [{ to: '/account', label: 'My Account' }] : []),
   ];
 
   return (

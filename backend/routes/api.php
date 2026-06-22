@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Account\AddressController as AccountAddressController;
+use App\Http\Controllers\Account\ProfileController as AccountProfileController;
+use App\Http\Controllers\Account\WishlistController as AccountWishlistController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -74,10 +77,30 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 });
 
+// Account routes (authenticated)
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::group(['prefix' => 'v1/account'], function (): void {
+        Route::get('/profile', [AccountProfileController::class, 'show']);
+        Route::patch('/profile', [AccountProfileController::class, 'update']);
+        Route::patch('/password', [AccountProfileController::class, 'updatePassword']);
+
+        Route::get('/addresses', [AccountAddressController::class, 'index']);
+        Route::post('/addresses', [AccountAddressController::class, 'store']);
+        Route::put('/addresses/{address}', [AccountAddressController::class, 'update']);
+        Route::delete('/addresses/{address}', [AccountAddressController::class, 'destroy']);
+        Route::patch('/addresses/{address}/default', [AccountAddressController::class, 'setDefault']);
+
+        Route::get('/wishlist', [AccountWishlistController::class, 'index']);
+        Route::post('/wishlist', [AccountWishlistController::class, 'store']);
+        Route::delete('/wishlist', [AccountWishlistController::class, 'destroy']);
+    });
+});
+
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
     Route::group(['prefix' => 'v1/admin'], function (): void {
         // Categories
+        Route::get('/categories/tree', [AdminCategoryController::class, 'tree']);
         Route::get('/categories', [AdminCategoryController::class, 'index']);
         Route::post('/categories', [AdminCategoryController::class, 'store']);
         Route::get('/categories/{category}', [AdminCategoryController::class, 'show']);
@@ -88,6 +111,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         // Products
         Route::get('/products', [AdminProductController::class, 'index']);
         Route::post('/products', [AdminProductController::class, 'store']);
+        Route::post('/products/bulk-action', [AdminProductController::class, 'bulkAction']);
         Route::get('/products/{product}', [AdminProductController::class, 'show']);
         Route::put('/products/{product}', [AdminProductController::class, 'update']);
         Route::patch('/products/{product}', [AdminProductController::class, 'update']);

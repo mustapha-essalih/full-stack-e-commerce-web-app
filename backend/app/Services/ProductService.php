@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
@@ -18,6 +19,8 @@ class ProductService
      */
     public function createProduct(array $data): Product
     {
+        $data = $this->sanitizeDescription($data);
+
         /** @var Product $product */
         $product = Product::create($data);
 
@@ -33,6 +36,7 @@ class ProductService
      */
     public function updateProduct(Product $product, array $data): Product
     {
+        $data = $this->sanitizeDescription($data);
         $product->update($data);
 
         if (array_key_exists('category_ids', $data)) {
@@ -62,6 +66,47 @@ class ProductService
                 ->where('product_id', $product->id)
                 ->update(['sort_order' => $item['sort_order']]);
         }
+    }
+
+    /**
+     * @param array<int> $ids
+     */
+    public function bulkActivate(array $ids): void
+    {
+        Product::withTrashed()->whereIn('id', $ids)->update([
+            'is_active' => true,
+            'deleted_at' => null,
+        ]);
+    }
+
+    /**
+     * @param array<int> $ids
+     */
+    public function bulkArchive(array $ids): void
+    {
+        DB::transaction(function () use ($ids): void {
+            $products = Product::whereIn('id', $ids)->get();
+
+            foreach ($products as $product) {
+                if ($product->trashed()) {
+                    continue;
+                }
+                $product->delete();
+            }
+        });
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function sanitizeDescription(array $data): array
+    {
+        if (isset($data['description'])) {
+            $data['description'] = strip_tags($data['description'], '<p><br><strong><em><u><h1><h2><h3><h4><h5><h6><ul><ol><li><blockquote><pre><code><span><div><a><img><hr>');
+        }
+
+        return $data;
     }
 
     public function setPrimaryImage(Product $product, int $imageId): void

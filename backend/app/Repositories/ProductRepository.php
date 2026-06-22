@@ -88,6 +88,21 @@ class ProductRepository
         return $query->paginate($perPage);
     }
 
+    /**
+     * @param array<int> $ids
+     * @return \Illuminate\Database\Eloquent\Collection<int, Product>
+     */
+    public function findByIds(array $ids): Collection
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Product> $products */
+        $products = Product::withTrashed()
+            ->with(['images', 'categories'])
+            ->whereIn('id', $ids)
+            ->get();
+
+        return $products;
+    }
+
     public function getFeatured(int $limit = 8): Collection
     {
         return Product::with(['primaryImage', 'categories'])

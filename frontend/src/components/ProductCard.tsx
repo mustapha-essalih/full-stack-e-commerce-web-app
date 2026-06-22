@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Product } from '../api/products';
 import AddToCartButton from './AddToCartButton';
+import WishlistButton from './WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -62,6 +63,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             Sale
           </span>
         )}
+        <WishlistButton
+          productId={product.id}
+          className="absolute right-2 top-2 bg-white/80 backdrop-blur-sm"
+        />
       </Link>
 
       <div className="flex flex-1 flex-col gap-2 p-4">

@@ -4,6 +4,7 @@ import { useProduct } from '../hooks/useProducts';
 import AddToCartButton from '../components/AddToCartButton';
 import ProductGallery from '../components/ProductGallery';
 import ProductCard from '../components/ProductCard';
+import WishlistButton from '../components/WishlistButton';
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -166,7 +167,13 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            <AddToCartButton product={product} showQuantity className="flex-wrap" />
+            <div className="flex items-center gap-4">
+              <AddToCartButton product={product} showQuantity className="flex-wrap" />
+              <WishlistButton
+                productId={product.id}
+                className="border border-secondary-300"
+              />
+            </div>
           </div>
         </div>
 
