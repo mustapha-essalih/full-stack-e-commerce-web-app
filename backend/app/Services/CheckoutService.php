@@ -10,6 +10,7 @@ use App\Events\OrderPaid;
 use App\Events\OrderPaymentFailed;
 use App\Models\Address;
 use App\Models\Cart;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -27,6 +28,7 @@ class CheckoutService
 
     public function __construct(
         private readonly CartService $cartService,
+        private readonly CouponService $couponService,
     ) {
         Stripe::setApiKey(config('services.stripe.secret'));
     }
@@ -93,6 +95,7 @@ class CheckoutService
     {
         if ($code === null) {
             $order->updateQuietly([
+                'coupon_id' => null,
                 'coupon_code' => null,
                 'discount_cents' => 0,
             ]);
@@ -106,9 +109,23 @@ class CheckoutService
             ];
         }
 
-        // Phase 11 will complete coupon validation
-        // Stub: no valid coupons yet
-        throw new \RuntimeException('Invalid or expired coupon code.');
+        $user = $order->user;
+
+        $validation = $this->couponService->validateCoupon($code, $order->subtotal_cents, $user);
+
+        if (!$validation['valid']) {
+            throw new \RuntimeException($validation['error']);
+        }
+
+        $this->couponService->applyCoupon($order, $validation['coupon'], $validation['discount_cents']);
+
+        $order->refresh();
+
+        return [
+            'order' => $order,
+            'totals' => $this->calculateTotals($order),
+            'discount' => $validation['discount_cents'],
+        ];
     }
 
     /**
@@ -193,12 +210,20 @@ class CheckoutService
             return $order;
         }
 
-        DB::transaction(function () use ($payment, $order): void {
+        DB::transaction(function () use ($payment, $order, $paymentIntentId): void {
             try {
                 /** @var PaymentIntent $intent */
                 $intent = PaymentIntent::retrieve($paymentIntentId);
                 $payment->markAsSucceeded($intent->charges->data[0]?->id ?? null);
                 $order->markAsPaid();
+
+                if ($order->coupon_id) {
+                    $coupon = Coupon::lockForUpdate()->find($order->coupon_id);
+
+                    if ($coupon) {
+                        $this->couponService->recordUsage($coupon, $order, $order->user);
+                    }
+                }
 
                 OrderPaid::dispatch($order);
             } catch (ApiErrorException $e) {

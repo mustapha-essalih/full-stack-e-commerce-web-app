@@ -42,6 +42,14 @@ class ProductResource extends JsonResource
                 return $primary ? new ProductImageResource($primary) : null;
             }),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
+            'average_rating' => $this->when($this->relationLoaded('reviews'), function (): ?float {
+                $avg = $this->reviews->where('is_approved', true)->avg('rating');
+
+                return $avg ? round($avg, 1) : null;
+            }),
+            'review_count' => $this->when($this->relationLoaded('reviews'), function (): int {
+                return $this->reviews->where('is_approved', true)->count();
+            }),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];

@@ -13,7 +13,7 @@ class ProductRepository
 {
     public function findBySlug(string $slug): ?Product
     {
-        return Product::with(['categories', 'images', 'categories.children'])
+        return Product::with(['categories', 'images', 'categories.children', 'reviews'])
             ->active()
             ->where('slug', $slug)
             ->first();

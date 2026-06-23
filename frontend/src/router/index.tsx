@@ -21,6 +21,11 @@ import AdminProductListPage from '../pages/admin/ProductListPage';
 import AdminProductFormPage from '../pages/admin/ProductFormPage';
 import AdminCategoryListPage from '../pages/admin/CategoryListPage';
 import AdminCategoryFormPage from '../pages/admin/CategoryFormPage';
+import AdminCouponListPage from '../pages/admin/CouponListPage';
+import AdminCouponFormPage from '../pages/admin/CouponFormPage';
+import AdminCouponDetailPage from '../pages/admin/CouponDetailPage';
+import AdminReviewModerationPage from '../pages/admin/ReviewModerationPage';
+import AccountReviewsPage from '../pages/account/AccountReviewsPage';
 import AddressBookPage from '../pages/account/AddressBookPage';
 import ProfilePage from '../pages/account/ProfilePage';
 import WishlistPage from '../pages/account/WishlistPage';
@@ -99,6 +104,10 @@ const router = createBrowserRouter([
                 element: <WishlistPage />,
               },
               {
+                path: 'reviews',
+                element: <AccountReviewsPage />,
+              },
+              {
                 path: 'orders',
                 element: <OrderHistoryPage />,
               },
@@ -164,6 +173,26 @@ const router = createBrowserRouter([
               {
                 path: 'customers/:uuid',
                 element: <AdminCustomerDetailPage />,
+              },
+              {
+                path: 'coupons',
+                element: <AdminCouponListPage />,
+              },
+              {
+                path: 'coupons/create',
+                element: <AdminCouponFormPage />,
+              },
+              {
+                path: 'coupons/:id/edit',
+                element: <AdminCouponFormPage />,
+              },
+              {
+                path: 'coupons/:id',
+                element: <AdminCouponDetailPage />,
+              },
+              {
+                path: 'reviews',
+                element: <AdminReviewModerationPage />,
               },
             ],
           },

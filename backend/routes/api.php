@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Account\AddressController as AccountAddressController;
 use App\Http\Controllers\Account\ProfileController as AccountProfileController;
+use App\Http\Controllers\Account\ReviewController as AccountReviewController;
 use App\Http\Controllers\Account\WishlistController as AccountWishlistController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Store\CategoryController as StoreCategoryController;
 use App\Http\Controllers\Store\ProductController as StoreProductController;
+use App\Http\Controllers\Store\ReviewController as StoreReviewController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +63,7 @@ Route::group(['prefix' => 'v1'], function (): void {
     Route::get('/products', [StoreProductController::class, 'index']);
     Route::get('/products/featured', [StoreProductController::class, 'featured']);
     Route::get('/products/{slug}', [StoreProductController::class, 'show']);
+    Route::get('/products/{slug}/reviews', [StoreReviewController::class, 'index']);
 });
 
 // Cart routes (mixed auth — guest and authenticated)
@@ -95,6 +100,16 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/wishlist', [AccountWishlistController::class, 'index']);
         Route::post('/wishlist', [AccountWishlistController::class, 'store']);
         Route::delete('/wishlist', [AccountWishlistController::class, 'destroy']);
+
+        Route::get('/reviews', [AccountReviewController::class, 'index']);
+    });
+});
+
+// Authenticated product review routes
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::group(['prefix' => 'v1/products'], function (): void {
+        Route::get('/{slug}/reviews/eligibility', [StoreReviewController::class, 'eligibility']);
+        Route::post('/{slug}/reviews', [AccountReviewController::class, 'store']);
     });
 });
 
@@ -142,6 +157,21 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::get('/inventory/low-stock', [AdminInventoryController::class, 'lowStock']);
         Route::post('/inventory/{productId}/adjust', [AdminInventoryController::class, 'adjust']);
         Route::get('/inventory/{productId}/history', [AdminInventoryController::class, 'history']);
+
+        // Coupons
+        Route::get('/coupons', [AdminCouponController::class, 'index']);
+        Route::post('/coupons', [AdminCouponController::class, 'store']);
+        Route::get('/coupons/{coupon}', [AdminCouponController::class, 'show']);
+        Route::put('/coupons/{coupon}', [AdminCouponController::class, 'update']);
+        Route::patch('/coupons/{coupon}', [AdminCouponController::class, 'update']);
+        Route::delete('/coupons/{coupon}', [AdminCouponController::class, 'destroy']);
+        Route::get('/coupons/{coupon}/usages', [AdminCouponController::class, 'usages']);
+
+        // Reviews
+        Route::get('/reviews', [AdminReviewController::class, 'index']);
+        Route::patch('/reviews/{review}/approve', [AdminReviewController::class, 'approve']);
+        Route::patch('/reviews/{review}/reject', [AdminReviewController::class, 'reject']);
+        Route::patch('/reviews/{review}/flag', [AdminReviewController::class, 'flag']);
     });
 });
 

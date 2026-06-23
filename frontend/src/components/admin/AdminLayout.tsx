@@ -12,6 +12,7 @@ const sidebarLinks: { to: string; label: string; end?: boolean }[] = [
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/customers', label: 'Customers' },
   { to: '/admin/coupons', label: 'Coupons' },
+  { to: '/admin/reviews', label: 'Reviews' },
   { to: '/admin/analytics', label: 'Analytics' },
 ];
 

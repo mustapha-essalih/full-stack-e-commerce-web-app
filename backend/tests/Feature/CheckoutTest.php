@@ -153,7 +153,7 @@ class CheckoutTest extends TestCase
             ]);
 
         $response->assertStatus(422)
-            ->assertJsonPath('message', 'Invalid or expired coupon code.');
+            ->assertJsonPath('message', 'Invalid coupon code.');
     }
 
     public function test_coupon_can_be_removed(): void

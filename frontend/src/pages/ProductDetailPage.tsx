@@ -1,17 +1,34 @@
-import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
+import { useProductReviews } from '../hooks/useReviews';
+import { useAuthStore } from '../stores/useAuthStore';
+import client from '../api/client';
 import AddToCartButton from '../components/AddToCartButton';
 import ProductGallery from '../components/ProductGallery';
 import ProductCard from '../components/ProductCard';
+import StarRating from '../components/StarRating';
+import ReviewCard from '../components/ReviewCard';
+import WriteReviewForm from '../components/WriteReviewForm';
 import WishlistButton from '../components/WishlistButton';
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data, isLoading, isError, error } = useProduct(slug!);
+  const reviewPage = Number(searchParams.get('review_page')) || 1;
+  const { data: reviewsData } = useProductReviews(slug!, reviewPage);
+
+  const [eligibility, setEligibility] = useState<{
+    eligible: boolean;
+    already_reviewed: boolean;
+  } | null>(null);
 
   const product = data?.product;
   const related = data?.related || [];
+  const reviews = reviewsData?.data || [];
+  const reviewMeta = reviewsData?.meta;
 
   useEffect(() => {
     if (product) {
@@ -22,6 +39,17 @@ export default function ProductDetailPage() {
       }
     }
   }, [product]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !slug) {
+      setEligibility(null);
+      return;
+    }
+    client
+      .get(`/v1/products/${slug}/reviews/eligibility`)
+      .then((res) => setEligibility(res.data.data))
+      .catch(() => setEligibility(null));
+  }, [isAuthenticated, slug]);
 
   if (isLoading) {
     return (
@@ -65,6 +93,9 @@ export default function ProductDetailPage() {
   const discount = product.compare_price_cents
     ? Math.round((1 - product.price_cents / product.compare_price_cents) * 100)
     : 0;
+
+  const avgRating = product.average_rating ?? reviewMeta?.average_rating;
+  const reviewCount = product.review_count ?? reviewMeta?.review_count;
 
   return (
     <div className="min-h-full bg-secondary-50">
@@ -125,20 +156,16 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
-                    key={star}
-                    className="h-5 w-5 text-yellow-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <span className="text-sm text-secondary-500">(24 reviews)</span>
+              {avgRating ? (
+                <div className="flex items-center gap-2">
+                  <StarRating rating={Math.round(avgRating)} size="sm" />
+                  <span className="text-sm text-secondary-500">
+                    {avgRating.toFixed(1)} ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm text-secondary-400">No reviews yet</span>
+              )}
             </div>
 
             {product.stock_quantity > 0 ? (
@@ -172,6 +199,67 @@ export default function ProductDetailPage() {
               <WishlistButton
                 productId={product.id}
                 className="border border-secondary-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          <h2 className="mb-6 text-xl font-bold text-secondary-900">Customer Reviews</h2>
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-4">
+              {reviews.length > 0 ? (
+                <>
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+
+                  {reviewMeta && reviewMeta.last_page > 1 && (
+                    <div className="flex items-center justify-center gap-2 pt-4">
+                      <button
+                        type="button"
+                        disabled={reviewPage <= 1}
+                        onClick={() => {
+                          const params = new URLSearchParams(searchParams);
+                          params.set('review_page', String(reviewPage - 1));
+                          setSearchParams(params);
+                        }}
+                        className="rounded-lg border border-secondary-300 px-4 py-2 text-sm font-medium text-secondary-600 hover:bg-secondary-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-sm text-secondary-500">
+                        Page {reviewMeta.current_page} of {reviewMeta.last_page}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={reviewPage >= reviewMeta.last_page}
+                        onClick={() => {
+                          const params = new URLSearchParams(searchParams);
+                          params.set('review_page', String(reviewPage + 1));
+                          setSearchParams(params);
+                        }}
+                        className="rounded-lg border border-secondary-300 px-4 py-2 text-sm font-medium text-secondary-600 hover:bg-secondary-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="rounded-lg border border-secondary-200 bg-white p-8 text-center">
+                  <p className="text-sm text-secondary-500">No reviews yet.</p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <WriteReviewForm
+                productSlug={slug!}
+                isEligible={eligibility?.eligible ?? null}
+                alreadyReviewed={eligibility?.already_reviewed ?? false}
               />
             </div>
           </div>

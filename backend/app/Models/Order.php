@@ -130,6 +130,11 @@ class Order extends Model
         return $this->belongsTo(Address::class, 'shipping_address_id');
     }
 
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

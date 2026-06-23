@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property-read Carbon|null $deleted_at
  * @property-read Collection<Category> $categories
  * @property-read Collection<ProductImage> $images
+ * @property-read Collection<Review> $reviews
  * @property-read string $price_formatted
  * @property-read string|null $compare_price_formatted
  *
@@ -99,6 +100,11 @@ class Product extends Model
     public function primaryImage(): HasOne
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true)->orderBy('sort_order');
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
     }
 
     public function inventoryAdjustments(): HasMany

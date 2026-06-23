@@ -56,6 +56,8 @@ export interface Product {
   weight_grams: number | null;
   meta_title: string | null;
   meta_description: string | null;
+  average_rating: number | null;
+  review_count: number;
   images: ProductImage[];
   primary_image: ProductImage | null;
   categories: Category[];

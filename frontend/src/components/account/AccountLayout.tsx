@@ -5,6 +5,7 @@ const sidebarLinks = [
   { to: '/account/addresses', label: 'Addresses' },
   { to: '/account/wishlist', label: 'Wishlist' },
   { to: '/account/orders', label: 'Orders' },
+  { to: '/account/reviews', label: 'Reviews' },
 ];
 
 export default function AccountLayout() {
