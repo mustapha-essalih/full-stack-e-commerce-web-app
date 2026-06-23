@@ -37,6 +37,16 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasRoles;
     use HasUuids;
 
+    public function sendPasswordResetNotification(string $token): void
+    {
+        $this->notify(new \App\Notifications\CustomResetPassword($token));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new \App\Notifications\CustomVerifyEmail());
+    }
+
     /**
      * The attributes that are mass assignable.
      *

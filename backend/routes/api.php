@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -180,6 +181,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::get('/analytics/top-products', [AdminAnalyticsController::class, 'topProducts']);
         Route::get('/analytics/customers', [AdminAnalyticsController::class, 'customers']);
         Route::get('/analytics/coupons', [AdminAnalyticsController::class, 'coupons']);
+
+        // Notifications
+        Route::get('/notifications', [AdminNotificationController::class, 'index']);
+        Route::patch('/notifications/{id}/read', [AdminNotificationController::class, 'markAsRead']);
+        Route::post('/notifications/read-all', [AdminNotificationController::class, 'markAllAsRead']);
     });
 });
 

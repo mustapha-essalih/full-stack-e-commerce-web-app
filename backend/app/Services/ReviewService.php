@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
+use App\Notifications\NewReviewNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -33,7 +34,7 @@ class ReviewService
 
     public function createReview(User $user, Product $product, Order $order, array $data): Review
     {
-        return Review::create([
+        $review = Review::create([
             'product_id' => $product->id,
             'user_id' => $user->id,
             'order_id' => $order->id,
@@ -41,6 +42,16 @@ class ReviewService
             'title' => $data['title'] ?? null,
             'body' => $data['body'] ?? null,
         ]);
+
+        $admins = User::role('admin')->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new NewReviewNotification(
+                review: $review->load(['product', 'user']),
+            ));
+        }
+
+        return $review;
     }
 
     public function approveReview(Review $review): void

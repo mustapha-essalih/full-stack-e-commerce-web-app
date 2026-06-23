@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/useAuthStore';
 import client from '../../api/client';
+import NotificationBell from './NotificationBell';
 
 const sidebarLinks: { to: string; label: string; end?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', end: true },
@@ -123,6 +124,7 @@ export default function AdminLayout() {
             <NavLink to="/" className="text-sm text-secondary-500 hover:text-secondary-700">
               View Store
             </NavLink>
+            <NotificationBell />
             <div className="h-5 w-px bg-secondary-200" />
             <span className="text-sm font-medium text-secondary-700">{user?.name}</span>
             <button

@@ -11,7 +11,11 @@ use App\Events\OrderStatusChanged;
 use App\Events\UserLoggedIn;
 use App\Listeners\InvalidateAnalyticsCache;
 use App\Listeners\MergeGuestCart;
+use App\Listeners\SendAdminNewOrderNotification;
 use App\Listeners\SendLowStockNotification;
+use App\Listeners\SendOrderConfirmationMail;
+use App\Listeners\SendOrderDeliveredMail;
+use App\Listeners\SendOrderShippedMail;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -25,9 +29,14 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderPaid::class => [
             InvalidateAnalyticsCache::class,
+            SendOrderConfirmationMail::class,
+            SendAdminNewOrderNotification::class,
         ],
         OrderPaymentFailed::class => [],
-        OrderStatusChanged::class => [],
+        OrderStatusChanged::class => [
+            SendOrderShippedMail::class,
+            SendOrderDeliveredMail::class,
+        ],
         LowStockDetected::class => [
             SendLowStockNotification::class,
         ],
