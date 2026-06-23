@@ -24,6 +24,7 @@ import AdminCategoryFormPage from '../pages/admin/CategoryFormPage';
 import AdminCouponListPage from '../pages/admin/CouponListPage';
 import AdminCouponFormPage from '../pages/admin/CouponFormPage';
 import AdminCouponDetailPage from '../pages/admin/CouponDetailPage';
+import AdminAnalyticsPage from '../pages/admin/AnalyticsPage';
 import AdminReviewModerationPage from '../pages/admin/ReviewModerationPage';
 import AccountReviewsPage from '../pages/account/AccountReviewsPage';
 import AddressBookPage from '../pages/account/AddressBookPage';
@@ -189,6 +190,10 @@ const router = createBrowserRouter([
               {
                 path: 'coupons/:id',
                 element: <AdminCouponDetailPage />,
+              },
+              {
+                path: 'analytics',
+                element: <AdminAnalyticsPage />,
               },
               {
                 path: 'reviews',

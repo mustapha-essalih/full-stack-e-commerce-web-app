@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -172,6 +173,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::patch('/reviews/{review}/approve', [AdminReviewController::class, 'approve']);
         Route::patch('/reviews/{review}/reject', [AdminReviewController::class, 'reject']);
         Route::patch('/reviews/{review}/flag', [AdminReviewController::class, 'flag']);
+
+        // Analytics
+        Route::get('/analytics/summary', [AdminAnalyticsController::class, 'summary']);
+        Route::get('/analytics/revenue-chart', [AdminAnalyticsController::class, 'revenueChart']);
+        Route::get('/analytics/top-products', [AdminAnalyticsController::class, 'topProducts']);
+        Route::get('/analytics/customers', [AdminAnalyticsController::class, 'customers']);
+        Route::get('/analytics/coupons', [AdminAnalyticsController::class, 'coupons']);
     });
 });
 
