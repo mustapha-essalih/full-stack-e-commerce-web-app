@@ -128,3 +128,18 @@ export async function updateOrderStatus(
   });
   return response.data.data;
 }
+
+export async function updateOrderNotes(
+  uuid: string,
+  adminNotes: string,
+): Promise<{ admin_notes: string }> {
+  const response = await client.patch(`/v1/admin/orders/${uuid}/notes`, {
+    admin_notes: adminNotes,
+  });
+  return response.data.data;
+}
+
+export async function refundOrder(uuid: string): Promise<Order> {
+  const response = await client.post(`/v1/admin/orders/${uuid}/refund`);
+  return response.data.data;
+}

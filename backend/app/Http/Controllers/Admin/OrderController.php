@@ -89,4 +89,57 @@ class OrderController extends Controller
             ], 422);
         }
     }
+
+    public function updateNotes(Request $request, string $uuid): JsonResponse
+    {
+        $order = $this->orderRepository->findByUuid($uuid);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'admin_notes' => ['nullable', 'string', 'max:10000'],
+        ]);
+
+        $order->admin_notes = $validated['admin_notes'];
+        $order->save();
+
+        return response()->json([
+            'data' => [
+                'admin_notes' => $order->admin_notes,
+            ],
+            'message' => 'Order notes updated.',
+        ]);
+    }
+
+    public function refund(string $uuid): JsonResponse
+    {
+        $order = $this->orderRepository->findByUuid($uuid);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        try {
+            $order = $this->orderService->refundOrder($order);
+
+            return response()->json([
+                'data' => new OrderResource($order),
+                'message' => 'Order refunded successfully.',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
 }

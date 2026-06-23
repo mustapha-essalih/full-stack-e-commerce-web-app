@@ -15,7 +15,9 @@ class OrderResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return [
+        $isAdmin = $request->user()?->hasRole('admin') ?? false;
+
+        $data = [
             'uuid' => $this->uuid,
             'user_id' => $this->user_id,
             'status' => $this->status,
@@ -37,6 +39,7 @@ class OrderResource extends JsonResource
             'shipped_at' => $this->shipped_at?->toISOString(),
             'delivered_at' => $this->delivered_at?->toISOString(),
             'processing_at' => $this->processing_at?->toISOString(),
+            'refunded_at' => $this->refunded_at?->toISOString(),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
@@ -44,5 +47,12 @@ class OrderResource extends JsonResource
             'shipping_address' => $this->shipping_address ?? new AddressResource($this->whenLoaded('shippingAddress')),
             'payment' => new PaymentResource($this->whenLoaded('payment')),
         ];
+
+        if ($isAdmin) {
+            $data['admin_notes'] = $this->admin_notes;
+            $data['user'] = $this->whenLoaded('user', fn () => new UserResource($this->user));
+        }
+
+        return $data;
     }
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminOrder, updateOrderStatus } from '../../api/orders';
+import { fetchAdminOrder, updateOrderStatus, updateOrderNotes, refundOrder } from '../../api/orders';
 import { formatPrice } from '../../utils/format';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
 import StatusTimeline from '../../components/StatusTimeline';
@@ -24,19 +24,28 @@ const STATUS_TRANSITIONS: Record<string, { label: string; status: string; needsT
   ],
 };
 
+const REFUNDABLE_STATUSES = ['paid', 'processing', 'shipped', 'delivered'];
+
 export default function AdminOrderDetailPage() {
   const { uuid } = useParams<{ uuid: string }>();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
 
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [adminNotes, setAdminNotes] = useState('');
 
   const { data: order, isLoading, isError } = useQuery({
     queryKey: ['admin-order', uuid],
     queryFn: () => fetchAdminOrder(uuid!),
     enabled: !!uuid,
   });
+
+  useEffect(() => {
+    if (order) {
+      const notes = (order as Record<string, unknown>).admin_notes;
+      setAdminNotes(typeof notes === 'string' ? notes : '');
+    }
+  }, [order]);
 
   const statusMutation = useMutation({
     mutationFn: ({ status, tracking }: { status: string; tracking?: string }) =>
@@ -49,6 +58,29 @@ export default function AdminOrderDetailPage() {
     },
     onError: () => {
       addToast('Failed to update order status.', 'error');
+    },
+  });
+
+  const notesMutation = useMutation({
+    mutationFn: (notes: string) => updateOrderNotes(uuid!, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-order', uuid] });
+      addToast('Order notes updated.', 'success');
+    },
+    onError: () => {
+      addToast('Failed to update notes.', 'error');
+    },
+  });
+
+  const refundMutation = useMutation({
+    mutationFn: () => refundOrder(uuid!),
+    onSuccess: (refundedOrder) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-order', uuid] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      addToast(`Order refunded successfully. Status: ${refundedOrder.status}`, 'success');
+    },
+    onError: (err: Error) => {
+      addToast(err.message || 'Failed to refund order.', 'error');
     },
   });
 
@@ -81,6 +113,7 @@ export default function AdminOrderDetailPage() {
   }
 
   const transitions = STATUS_TRANSITIONS[order.status] ?? [];
+  const canRefund = REFUNDABLE_STATUSES.includes(order.status);
   const shippingAddr = order.shipping_address as Record<string, string> | null | undefined;
   const billingAddr = order.billing_address as Record<string, string> | null | undefined;
 
@@ -246,6 +279,55 @@ export default function AdminOrderDetailPage() {
               <> &middot; Charge: {order.payment.stripe_charge_id}</>
             )}
           </p>
+        </div>
+      )}
+
+      {/* Admin Notes */}
+      <div className="mb-6 rounded-lg border border-secondary-200 bg-white p-6">
+        <h2 className="mb-4 text-sm font-semibold text-secondary-900">Admin Notes</h2>
+        <textarea
+          rows={3}
+          value={adminNotes}
+          onChange={(e) => setAdminNotes(e.target.value)}
+          placeholder="Add internal notes about this order..."
+          className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        />
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => notesMutation.mutate(adminNotes)}
+            disabled={notesMutation.isPending}
+            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {notesMutation.isPending ? 'Saving...' : 'Save Notes'}
+          </button>
+        </div>
+      </div>
+
+      {/* Refund */}
+      {canRefund && (
+        <div className="mb-6 rounded-lg border border-danger-200 bg-danger-50 p-6">
+          <h2 className="mb-2 text-sm font-semibold text-danger-800">Refund Order</h2>
+          <p className="mb-4 text-sm text-danger-600">
+            This will process a full refund via Stripe and restore inventory.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('Are you sure you want to refund this order? This action cannot be undone.')) {
+                refundMutation.mutate();
+              }
+            }}
+            disabled={refundMutation.isPending}
+            className="rounded-lg bg-danger-600 px-4 py-2 text-sm font-medium text-white hover:bg-danger-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {refundMutation.isPending ? 'Refunding...' : 'Refund Order'}
+          </button>
+          {refundMutation.isError && (
+            <p className="mt-2 text-sm text-danger-700">
+              {(refundMutation.error as Error)?.message || 'Refund failed.'}
+            </p>
+          )}
         </div>
       )}
     </div>

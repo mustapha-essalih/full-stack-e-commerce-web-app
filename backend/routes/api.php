@@ -6,6 +6,8 @@ use App\Http\Controllers\Account\AddressController as AccountAddressController;
 use App\Http\Controllers\Account\ProfileController as AccountProfileController;
 use App\Http\Controllers\Account\WishlistController as AccountWishlistController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthController;
@@ -127,6 +129,19 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function (): void {
         Route::get('/orders', [AdminOrderController::class, 'index']);
         Route::get('/orders/{uuid}', [AdminOrderController::class, 'show']);
         Route::patch('/orders/{uuid}/status', [AdminOrderController::class, 'updateStatus']);
+        Route::patch('/orders/{uuid}/notes', [AdminOrderController::class, 'updateNotes']);
+        Route::post('/orders/{uuid}/refund', [AdminOrderController::class, 'refund']);
+
+        // Customers
+        Route::get('/customers', [AdminCustomerController::class, 'index']);
+        Route::get('/customers/{uuid}', [AdminCustomerController::class, 'show']);
+        Route::patch('/customers/{uuid}/suspend', [AdminCustomerController::class, 'suspend']);
+        Route::patch('/customers/{uuid}/reinstate', [AdminCustomerController::class, 'reinstate']);
+
+        // Inventory
+        Route::get('/inventory/low-stock', [AdminInventoryController::class, 'lowStock']);
+        Route::post('/inventory/{productId}/adjust', [AdminInventoryController::class, 'adjust']);
+        Route::get('/inventory/{productId}/history', [AdminInventoryController::class, 'history']);
     });
 });
 

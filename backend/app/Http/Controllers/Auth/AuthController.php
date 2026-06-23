@@ -55,6 +55,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if ($user->is_suspended) {
+            return response()->json([
+                'message' => 'Your account has been suspended. Please contact support.',
+            ], 403);
+        }
+
         $user->tokens()->delete();
 
         $accessToken = $user->createToken('access', ['*'], now()->addMinutes(15));

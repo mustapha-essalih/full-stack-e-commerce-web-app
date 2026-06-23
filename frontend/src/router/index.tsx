@@ -14,6 +14,9 @@ import ProductDetailPage from '../pages/ProductDetailPage';
 import AdminOrderDetailPage from '../pages/admin/OrderDetailPage';
 import AdminOrderListPage from '../pages/admin/OrderListPage';
 import AdminDashboardPage from '../pages/admin/DashboardPage';
+import AdminInventoryPage from '../pages/admin/AdminInventoryPage';
+import AdminCustomerListPage from '../pages/admin/CustomerListPage';
+import AdminCustomerDetailPage from '../pages/admin/CustomerDetailPage';
 import AdminProductListPage from '../pages/admin/ProductListPage';
 import AdminProductFormPage from '../pages/admin/ProductFormPage';
 import AdminCategoryListPage from '../pages/admin/CategoryListPage';
@@ -123,6 +126,10 @@ const router = createBrowserRouter([
                 element: <AdminProductListPage />,
               },
               {
+                path: 'inventory',
+                element: <AdminInventoryPage />,
+              },
+              {
                 path: 'products/create',
                 element: <AdminProductFormPage />,
               },
@@ -149,6 +156,14 @@ const router = createBrowserRouter([
               {
                 path: 'orders/:uuid',
                 element: <AdminOrderDetailPage />,
+              },
+              {
+                path: 'customers',
+                element: <AdminCustomerListPage />,
+              },
+              {
+                path: 'customers/:uuid',
+                element: <AdminCustomerDetailPage />,
               },
             ],
           },

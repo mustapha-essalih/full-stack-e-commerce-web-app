@@ -29,8 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'suspended' => \App\Http\Middleware\CheckSuspended::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (App\Exceptions\InsufficientStockException $e, Request $request) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
     })->create();

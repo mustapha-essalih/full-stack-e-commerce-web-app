@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\InventoryAdjustmentType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Events\OrderStatusChanged;
 use App\Models\Cart;
 use App\Models\Order;
@@ -12,12 +14,17 @@ use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Refund;
+use Stripe\Stripe;
 
 class OrderService
 {
     public function __construct(
         private readonly CartService $cartService,
+        private readonly InventoryService $inventoryService,
     ) {
+        Stripe::setApiKey(config('services.stripe.secret'));
     }
 
     /**
@@ -46,12 +53,6 @@ class OrderService
             foreach ($cart->items as $cartItem) {
                 $product = $cartItem->product;
 
-                if ($product->stock_quantity < $cartItem->quantity) {
-                    throw new \RuntimeException(
-                        "Insufficient stock for {$product->name}. Available: {$product->stock_quantity}, requested: {$cartItem->quantity}."
-                    );
-                }
-
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
@@ -62,7 +63,7 @@ class OrderService
                     'total_cents' => $cartItem->quantity * $cartItem->unit_price_cents,
                 ]);
 
-                $product->decrement('stock_quantity', $cartItem->quantity);
+                $this->inventoryService->reserveStock($product, $cartItem->quantity);
             }
 
             $this->cartService->clearCart($cart);
@@ -154,8 +155,13 @@ class OrderService
             $order->load('items');
 
             foreach ($order->items as $item) {
-                if ($item->product_id !== null) {
-                    $item->product?->increment('stock_quantity', $item->quantity);
+                if ($item->product_id !== null && $item->product) {
+                    $this->inventoryService->adjustStock(
+                        $item->product,
+                        $item->quantity,
+                        InventoryAdjustmentType::Cancellation,
+                        note: 'Order cancelled',
+                    );
                 }
             }
 
@@ -172,5 +178,50 @@ class OrderService
         $status = OrderStatus::from($order->status);
 
         return $status === OrderStatus::Pending || $status === OrderStatus::Paid;
+    }
+
+    public function refundOrder(Order $order): Order
+    {
+        if (!$order->isRefundable()) {
+            throw new \InvalidArgumentException(
+                "Order cannot be refunded in its current status: {$order->status}."
+            );
+        }
+
+        $payment = $order->payment;
+
+        if (!$payment || !$payment->stripe_payment_intent_id) {
+            throw new \RuntimeException('No payment found for this order.');
+        }
+
+        return DB::transaction(function () use ($order, $payment): Order {
+            try {
+                Refund::create([
+                    'payment_intent' => $payment->stripe_payment_intent_id,
+                ]);
+            } catch (ApiErrorException $e) {
+                throw new \RuntimeException('Stripe refund failed: ' . $e->getMessage());
+            }
+
+            $order->load('items');
+
+            foreach ($order->items as $item) {
+                if ($item->product_id !== null && $item->product) {
+                    $this->inventoryService->adjustStock(
+                        $item->product,
+                        $item->quantity,
+                        InventoryAdjustmentType::Cancellation,
+                        note: 'Order refunded',
+                    );
+                }
+            }
+
+            $order->markAsRefunded();
+
+            $payment->status = PaymentStatus::Refunded->value;
+            $payment->save();
+
+            return $order->fresh(['items', 'payment']);
+        });
     }
 }

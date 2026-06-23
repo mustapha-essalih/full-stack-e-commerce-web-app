@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/useAuthStore';
+import client from '../../api/client';
 
-const sidebarLinks = [
+const sidebarLinks: { to: string; label: string; end?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/products', label: 'Products' },
+  { to: '/admin/inventory', label: 'Inventory' },
   { to: '/admin/categories', label: 'Categories' },
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/customers', label: 'Customers' },
@@ -16,6 +19,17 @@ export default function AdminLayout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { data: lowStockData } = useQuery({
+    queryKey: ['low-stock-count'],
+    queryFn: async () => {
+      const { data } = await client.get('/v1/admin/inventory/low-stock');
+      return data as { meta: { count: number } };
+    },
+    refetchInterval: 60_000,
+  });
+
+  const lowStockCount = lowStockData?.meta.count ?? 0;
 
   function handleLogout() {
     logout();
@@ -60,7 +74,14 @@ export default function AdminLayout() {
                     }`
                   }
                 >
-                  {link.label}
+                  <div className="flex items-center gap-2">
+                    {link.label}
+                    {link.to === '/admin/inventory' && lowStockCount > 0 && (
+                      <span className="inline-flex items-center justify-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        {lowStockCount}
+                      </span>
+                    )}
+                  </div>
                 </NavLink>
               </li>
             ))}

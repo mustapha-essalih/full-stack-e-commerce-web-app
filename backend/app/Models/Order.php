@@ -65,6 +65,7 @@ class Order extends Model
         'total_cents',
         'currency',
         'notes',
+        'admin_notes',
         'coupon_code',
         'billing_address_id',
         'shipping_address_id',
@@ -78,6 +79,7 @@ class Order extends Model
         'shipped_at',
         'delivered_at',
         'processing_at',
+        'refunded_at',
     ];
 
     protected function casts(): array
@@ -93,6 +95,7 @@ class Order extends Model
             'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
             'processing_at' => 'datetime',
+            'refunded_at' => 'datetime',
             'shipping_address' => 'array',
             'billing_address' => 'array',
         ];
@@ -180,6 +183,23 @@ class Order extends Model
     {
         $this->status = OrderStatus::Cancelled->value;
         $this->cancelled_at = now();
+        $this->save();
+    }
+
+    public function isRefundable(): bool
+    {
+        return in_array($this->status, [
+            OrderStatus::Paid->value,
+            OrderStatus::Processing->value,
+            OrderStatus::Shipped->value,
+            OrderStatus::Delivered->value,
+        ], true);
+    }
+
+    public function markAsRefunded(): void
+    {
+        $this->status = OrderStatus::Refunded->value;
+        $this->refunded_at = now();
         $this->save();
     }
 }
